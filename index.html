@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yellowstone NP Visitor Forecast</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: white;
+      padding: 40px;
+      width: 520px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 80px;
+      padding: 8px;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #eee;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #ddd;
+    }
+
+    canvas {
+      margin-top: 30px;
+    }
+
+    .error {
+      color: red;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>Yellowstone NP Visitor Forecast</h1>
+    <p>Select forecast horizon (months)</p>
+
+    <input type="number" id="months" value="6" min="1" max="12" />
+    <br />
+    <button onclick="getForecast()">Get Forecast</button>
+
+    <div id="error" class="error"></div>
+
+    <canvas id="forecastChart"></canvas>
+  </div>
+
+  <script>
+    const API_URL = "https://yellowstone-visitation-api.onrender.com/forecast";
+    let chart = null;
+
+    function getMonthName(offset) {
+      const date = new Date();
+      date.setMonth(date.getMonth() + offset);
+      return date.toLocaleString("default", {
+        month: "short",
+        year: "numeric"
+      });
+    }
+
+    async function getForecast() {
+      const months = document.getElementById("months").value;
+      const errorDiv = document.getElementById("error");
+      errorDiv.innerHTML = "";
+
+      try {
+        const response = await fetch(`${API_URL}?months=${months}`);
+        const data = await response.json();
+
+        const labels = [];
+        const values = [];
+
+        data.forecast.forEach(item => {
+          labels.push(getMonthName(item.month));
+          values.push(Math.round(item.visits));
+        });
+
+        renderChart(labels, values);
+
+      } catch (err) {
+        errorDiv.innerText = "Failed to fetch forecast.";
+      }
+    }
+
+    function renderChart(labels, values) {
+      const ctx = document.getElementById("forecastChart");
+
+      if (chart) {
+        chart.destroy();
+      }
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Expected Visitors",
+            data: values,
+            borderColor: "#0077ff",
+            backgroundColor: "rgba(0,119,255,0.15)",
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true
+            }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: value => value.toLocaleString()
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
