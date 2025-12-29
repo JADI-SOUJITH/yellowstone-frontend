@@ -3,7 +3,7 @@
 This frontend consumes a live forecasting API deployed separately.
 
 - **Backend API Repository:**  
-  https://github.com/SOUJITH-JADI/yellowstone-visitation-api
+  [https://github.com/SOUJITH-JADI/yellowstone-visitation-api](https://github.com/JADI-SOUJITH/yellowstone-visitation-api)
 
   # Yellowstone National Park Visitor Forecaster
 
